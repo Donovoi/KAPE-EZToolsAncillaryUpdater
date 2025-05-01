@@ -30,6 +30,7 @@
 		4.1 - (June 16, 2023) Minor adjustments based on feedback from version 4.0. Additionally, added script info to the log output
 		4.2 - (August 04, 2023) Added PowerShell 5 requirement to avoid any potential complications
 		4.3 - (January 25, 2025) Added net parameter, with options for .NET 6 or .NET 9 tools, with a default to .NET 9. Simplify and consolidate GitHub sync functions. Update Get-ZimmermanTools.ps1 URL. Improve code readability and maintainability throughout.
+		4.4 - (May 1, 2025) Fixed https://github.com/AndrewRathbun/KAPE-EZToolsAncillaryUpdater/issues/25
 	
 	.PARAMETER silent
 		Disable the progress bar and exit the script without pausing in the end
@@ -47,16 +48,19 @@
 		Created by:	   		Andrew Rathbun
 		Filename:			KAPE-EZToolsAncillaryUpdater.ps1
 		GitHub:				https://github.com/AndrewRathbun/KAPE-EZToolsAncillaryUpdater
-		Version:			4.3
+		Version:			4.4
 		===========================================================================
 #>
 param
 (
 	[Parameter(HelpMessage = 'Disable the progress bar and exit the script without pausing in the end')]
+	[Alias('s')]
 	[Switch]$silent,
 	[Parameter(HelpMessage = 'Use this if you do not want to check for and update the script')]
+	[Alias('dnu')]
 	[Switch]$DoNotUpdate,
 	[ValidateSet('6', '9')]
+	[Alias('n')]
 	[string]$net = '9'
 )
 
@@ -103,7 +107,16 @@ function Start-Script
 	
 	Log -logFilePath $logFilePath -msg ' --- Beginning of session ---' # start of Log
 	
-	Set-ExecutionPolicy Bypass -Scope Process
+	# https://github.com/AndrewRathbun/KAPE-EZToolsAncillaryUpdater/issues/25
+	try
+	{
+		Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+	}
+	catch
+	{
+		Log -logFilePath $logFilePath -msg "ExecutionPolicy cannot be changed to Bypass."
+		Log -logFilePath $logFilePath -msg "Current ExecutionPolicy: $(Get-ExecutionPolicy)"
+	}
 	
 	# Let's get some script info and provide it to the end user for the purpose of the log
 	# establish name of script to pass to Log-ToFile Module, so it outputs to the correctly named log file
@@ -671,8 +684,8 @@ finally
 # SIG # Begin signature block
 # MIIvlwYJKoZIhvcNAQcCoIIviDCCL4QCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCARCoFD7WBVjPoG
-# sXzoouCocQnVXsdmU2ns/rmO9lt31aCCKJwwggQyMIIDGqADAgECAgEBMA0GCSqG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA3L2iTxWN3RETr
+# WDDYfAYebtCBBIgKJK7MRUkA6J2OmqCCKJwwggQyMIIDGqADAgECAgEBMA0GCSqG
 # SIb3DQEBBQUAMHsxCzAJBgNVBAYTAkdCMRswGQYDVQQIDBJHcmVhdGVyIE1hbmNo
 # ZXN0ZXIxEDAOBgNVBAcMB1NhbGZvcmQxGjAYBgNVBAoMEUNvbW9kbyBDQSBMaW1p
 # dGVkMSEwHwYDVQQDDBhBQUEgQ2VydGlmaWNhdGUgU2VydmljZXMwHhcNMDQwMTAx
@@ -892,35 +905,35 @@ finally
 # H+oe2u/oMYIGUTCCBk0CAQEwaDBUMQswCQYDVQQGEwJHQjEYMBYGA1UEChMPU2Vj
 # dGlnbyBMaW1pdGVkMSswKQYDVQQDEyJTZWN0aWdvIFB1YmxpYyBDb2RlIFNpZ25p
 # bmcgQ0EgUjM2AhAhqkhIHhrn6JmTDAPnG+yGMA0GCWCGSAFlAwQCAQUAoEwwGQYJ
-# KoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwLwYJKoZIhvcNAQkEMSIEIOT46my4Pn7E
-# 2da21+Pf6Wv5ZwiW/deuB89eVtWdRkFAMA0GCSqGSIb3DQEBAQUABIICAJO0cq5e
-# 4g24ie7zxzWvabmLFFrDulDwPl5SDcXHUbaIzQfLKNyD9OORTUSs29P4jrGdmsTj
-# L5I0SURdLXwEH/txoyr9R+Wm9Kfn4x82grEk/6A4sdz/cT5VaKIoDuobkaDYeF9E
-# gvccmy+QDmVZlzC4E0c37SX/kgKNppxHvxQAQxOXZQtc67pZVmDz++wcl2ubRfxM
-# WF0TBG9u6hR8IQUwu+y5N/A62RlVzlq5GpWVL3V49EiPEBC9H3g7vjl438Y626T+
-# d8u56B8Tebdq/9WWRs8XpNLWmHWW8bexgCe9My2SQW2qdZs7d3gFMpJ2jZtjeaI5
-# MglC0mS2ZOf38mXhdQL7PdpIpK7ch5up+2b+v4ikz1gLX9467p0Dx40kFBYRJ7JQ
-# pmVwjnUVpgaOmnSba0kGgRylks+1+OfqSWhb1GRNwHriDtvGvJzfsSp1bKfDKlaw
-# u5oKQ2bou2mZfb2ufJlxLNI6tYNCkzJEXKr5GkSPAW2t2RK7dJxl4kSzD0R+gYGy
-# HlVLewePAlE9u1gCpZhdvjD1Utm8IVJSbfa7+PoI/znmXkGC0J0oatuG2chBsejK
-# FI1VZ2U5WRiX2R31llfOKgzTrxTxB8HlYMkRubtj1qyNBmpPQBx9CFWQ8ZhUvJ9z
-# LO9nWtashZJjn71J4sznaJeWZ1pYcdnhM/AuoYIDbDCCA2gGCSqGSIb3DQEJBjGC
+# KoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwLwYJKoZIhvcNAQkEMSIEIFubXRt+yFp1
+# 5N0wz2SrsdST6HtGxWSxeKvYbAWxfKHsMA0GCSqGSIb3DQEBAQUABIICAL1RwcUu
+# AxF6t8AfO9pk/Aa2aq3BcKNCWT9YxDwaELJDzpBBXVxcprTjYIoNdwGsIQmb59h/
+# F/jM17zwET5m3VCI6r4QkUiWk9TjbH8gJUGAc1eVHJo+l1Peqsn3VkNu5Vn3fVHU
+# jZmSxWOntZrwvZJp89+J9D2Nszoub1CkkNNAUrXJf7yKfAlbmbXHhlqr/gFWRSmB
+# uz5G1qCrsMiXW9HlFLlHTo5D9BHHVmRcRAktYQgk7nJ9/UHnf/OwM9IJLtw0v0OR
+# 389bf6hLfcUzqp4J9Nxu8y1blbhiPwoBC8iyw19AD5iZRXkoprZIflJoa93s77jJ
+# 6f4s06oqE88VDYCADJCQkcDMINkzHzHjIYyRxC54qCyFj2sCUJVpVTr7CkmobRjv
+# C3ajJwvCZsSpPYrC6hXAucU5g/8BsIwQ88mpnZWGJqQtv8Y0Hu2nxFVyvREl7l/B
+# MwbobiD3iG793IwNk11B2+UKQfIZjVpMbwlNveOFf0p/pPt8Sn90A2dzaJC7uk/B
+# GUMtTIP38HZaTISamUAE1TywerWCh0AFUk6di62ErJeBgpltSTlMBPADy60HYOpi
+# zcJLuB4TKzavFm8DdU3tm/yN2BXPwJHQmZ+pGFf0AK42M9IcAolX4Pf9Kp1/4mce
+# jgsAJrLE9AKwb6NZE1sIxK5QU78h8n4R3gBeoYIDbDCCA2gGCSqGSIb3DQEJBjGC
 # A1kwggNVAgEBMG8wWzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24g
 # bnYtc2ExMTAvBgNVBAMTKEdsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gU0hB
 # Mzg0IC0gRzQCEAEHZJsIsKf+fdZUqPL0KfYwCwYJYIZIAWUDBAIBoIIBPTAYBgkq
-# hkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAyMDIyMjQ0
-# MjdaMCsGCSqGSIb3DQEJNDEeMBwwCwYJYIZIAWUDBAIBoQ0GCSqGSIb3DQEBCwUA
-# MC8GCSqGSIb3DQEJBDEiBCCsDFbsC196FXmT2Z3L/VOKoTOFffV3zUypSE4IlV4Q
-# 4zCBpAYLKoZIhvcNAQkQAgwxgZQwgZEwgY4wgYsEFETTk5zNG4h/hnrM2oHsrw9l
+# hkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTA1MDExNDI2
+# MDlaMCsGCSqGSIb3DQEJNDEeMBwwCwYJYIZIAWUDBAIBoQ0GCSqGSIb3DQEBCwUA
+# MC8GCSqGSIb3DQEJBDEiBCB+cFgRFRttrMwx2QJtOK8it2QZ6jn61JnosoEWiC7C
+# 5zCBpAYLKoZIhvcNAQkQAgwxgZQwgZEwgY4wgYsEFETTk5zNG4h/hnrM2oHsrw9l
 # /NJZMHMwX6RdMFsxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52
 # LXNhMTEwLwYDVQQDEyhHbG9iYWxTaWduIFRpbWVzdGFtcGluZyBDQSAtIFNIQTM4
-# NCAtIEc0AhABB2SbCLCn/n3WVKjy9Cn2MA0GCSqGSIb3DQEBCwUABIIBgDb4qCMi
-# TvV3b2DJRv3iwKlXGMIXCMRziWEs9NeN+Pjh2MRqM2Mbxnt3xaGYvaFFHJYTKN5P
-# FJzBhgfMQ6CW1UFraZn3fjzmYm+ACX9feOb7WCd64G1GhkaqKZbq1xfaIrXB6Zj9
-# 1UAS4rDpWGA6oDOukRg0tlT1gADA7GDX4NpWno2QXw+G0W16VKIQebyZ7KmBdfD6
-# r2p+3mEMqZxCPDdUaYyYt+8VcQc9GTnJJo7DG5TL1WmJhkv1sa4QrwOY2cHOZz+e
-# ZKOD8iRuftqwHRpALuByDlr+jP02+7yFivxWN7C7usdqqcYj1lSdW+vnuPLV3ctf
-# vLjS/np6u/RHTcCoeVQKJTrICPPAK+5Rfelj7g4Wv0dzSWf8UFc9wZT8V5hY9Y3q
-# ebOA2vA72jecX2CFu+L1WqNDKioTPr/yNrTVtl5piwFBy9fOSv170jWle7kRP7Dc
-# BsBkUKR697zjq9+/D5hXlf2MjM0TdkcXeyaalPC0GFvMFW+iNOLwZm9lNg==
+# NCAtIEc0AhABB2SbCLCn/n3WVKjy9Cn2MA0GCSqGSIb3DQEBCwUABIIBgIX65Alr
+# TGguhCXeFsSk3kNm71Wt5WpjybeKzZ2WIspO9ZxDVjsV16I09jF+JLdZIbZJP50A
+# +JF+00xr9I5ANDmZpcT0m3hY4TaEDup9/3p578AohwuHKS7oy0jjOZe4nPY97+NO
+# Yv4YGwDSrnWfMyyokTwCCfytofEGlBbZ8OxRY/V9UI93sGY5zFRQurx3aiWzNf2T
+# 7XLlKxXoQY7bB21x/A9G7nKzqbcg8EPWtqg/bbSl0tW93MXTvgDVVXkevuCmOKAD
+# vyRUbYvt3mFkV6h84mUrAHiWOXTHUKioc7wqNi9CE7A7dsQOEitdeOZOX6lcHoyq
+# Tv1hUu1ViFycdu3McnQfSjZfit/yVhQdSsrJAgEKq0HgsCWrRPqBHJpuxJsJegWG
+# N1kcKYgTTHfcwVotQix2xPJfCXnEjMhwFzr4ofsgSwN2BaaT22XqmEglzBBP9T4J
+# YzWgqXxrQcvYxgtBgGR6ENJPtBOu+enJlpSG8mS6SMpdWVWSXDp97B6NWg==
 # SIG # End signature block
